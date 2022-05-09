@@ -60,7 +60,10 @@ class DataPreprocessors:
         
     
     def normalize_data(self):
-        pass
+        max_val = max(self.original_data)
+        min_val = min(self.original_data)
+        for i in self.original_data:
+            i = (i - min_val)/(max_val - min_val)
 
 
 class LSTM(nn.Module):

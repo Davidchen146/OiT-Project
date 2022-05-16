@@ -59,7 +59,6 @@ class DataPreprocessors:
 
         return X_train, X_test, y_train, y_test
 
-
     def normalize_data(self, X, scaler=None, train=False):
         """Given a list of input features, standardizes them to bring them onto a homogenous scale
         Args:
@@ -69,10 +68,13 @@ class DataPreprocessors:
                 passed to scale it. Defaults to False.
         """
         if train:
+            # If we're training, make a new MinMaxScaler with default range. 0 is min, 1 is max
             scaler = MinMaxScaler(feature_range=(0,1))
+            # fit_transform calculates the min and max values of the data scales the data according to it
             new_X = scaler.fit_transform(X)
             return (new_X, scaler)
         else:
+            # If we're validating or testing, transform the data using parameters determined beforehand
             new_X = scaler.transform(X)
             return (new_X, None)
 
@@ -116,8 +118,6 @@ def getDataLoader(x, y, params):
     training_set = createDataLoader(x, y)
     training_generator = torch.utils.data.DataLoader(training_set, **params)
     return training_generator
->>>>>>> f05191d8e72bd73e95b6a9ca0bfc5426d3492270
-
 
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_layer_size, 

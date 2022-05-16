@@ -4,3 +4,5 @@ kaggle
 python-dotenv
 matplotlib
 seaborn
+sklearn
+torch

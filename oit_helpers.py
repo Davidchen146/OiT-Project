@@ -116,7 +116,7 @@ def getDataLoader(x, y, params):
         params ([dict]): [Parameters pertaining to dataloader eg. batch size]
     """
     training_set = createDataLoader(x, y)
-    training_generator = torch.utils.data.DataLoader(training_set, **params)
+    training_generator = torch.utils.data.DataLoader(training_set, drop_last=True, **params)
     return training_generator
 
 class LSTM(nn.Module):
@@ -149,35 +149,44 @@ class LSTM(nn.Module):
 
         # initialize hidden state with zeros
         # tuple of hidden and cell state
-        self.hidden_cell = (torch.zeros(1,1,self.hidden_layer_size),
-                            torch.zeros(1,1,self.hidden_layer_size))
+        #self.hidden_cell = (torch.zeros(1,1,self.hidden_layer_size),
+        #                    torch.zeros(1,1,self.hidden_layer_size))
+        
+    def init_hidden(self, batch_size):
+        """Initialize hidden layers
+        
+        Args:
+            batch_size (int):
+        """
+        
+        return (torch.zeros(self.n_layers,batch_size,self.hidden_layer_size),
+                torch.zeros(self.n_layers,batch_size,self.hidden_layer_size))
 
-    def forward(self, input_seq):
+    def forward(self, input_seq, batch_size):
         """Define the forward propogation logic here
         Args:
             input_seq ([Tensor]): [A 3-dimensional float tensor containing parameters]
         """
         
-        #lstm_out, self.hidden_cell = self.lstm(input_seq.view(len(input_seq) ,1, -1), self.hidden_cell)
+        init_hidden_cell_states = self.init_hidden(batch_size)
+        
+        #lstm_out, self.hidden_cell = self.lstm(input_seq.view(len(input_seq) ,1, -1), init_hidden_cell_states)
         #predictions = self.linear(lstm_out.view(len(input_seq), -1))
         #return predictions[-1]
         
-        bs = input_seq.shape[1]
-        out, _ = self.lstm(input_seq, self.hidden_cell)
+        out, _ = self.lstm(input_seq, init_hidden_cell_states)
         out = out.contiguous().view(-1, self.hidden_layer_size)
         out = self.linear(out)
         
         return out
-        
     
-    def predict(self, input):
+    def predict(self, input, batch_size):
         """Makes prediction for the set of inputs provided and returns the same
         Args:
             input (torch.Tensor): A tensor of inputs
         """
         
         with torch.no_grad():
-            predictions = self.forward(input)
+            predictions = self.forward(input, batch_size)
             
         return predictions
-            
